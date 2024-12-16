@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="나만의 쿠폰을 만들고 공유해 보세요!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿠퐁 - 나만의 쿠폰 만들기</title>
+  <link rel="icon" href="icon_mini.png" type="image/x-icon">
+  <link rel="shortcut icon" href="icon_mini.png" type="image/x-icon">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    /* 헤더 스타일 */
+    header {
+      background-color: #ffffff;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header .logo {
+      height: 35px;
+    }
+
+    header .back-button {
+      padding: 10px 20px;
+      background-color: #6667ab;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    header .back-button:hover {
+      background-color: #505086;
+    }
+    /* 제목 스타일 */
+    h1 {
+      margin: 30px 0 20px;
+      font-size: 28px;
+      color: #6667ab;
+      text-align: center;
+    }
+    .coupon-container {
+      position: relative;
+      width: 350px;
+      height: 210px;
+      margin: 20px auto;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      background-color: white;
+      border-radius: 10px;
+    }
+    .coupon-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .text-overlay, .day-overlay {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffffff;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .text-overlay {
+      top: 50%;
+      left: 40%;
+    }
+    .day-overlay {
+      top: 90%;
+      left: 40%;
+      font-size: 12px;
+    }
+
+    /* 색상 입력 필드 한 줄 배치 */
+    .color-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90%;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .color-controls h3 {
+      font-size: 16px;
+      color: #6667ab;
+      flex: 1;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .color-controls .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-controls .hex-input {
+      width: 80px;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .color-controls .color-picker {
+      width: 36px;
+      height: 36px;
+      border: none;
+      cursor: pointer;
+    }
+    
+    /* 공통 스타일 */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .controls h3 {
+      font-size: 16px;
+      color: #6667ab;
+      margin-bottom: 5px;
+    }
+
+    .controls .input-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .controls .input-group input {
+      flex: 1;
+    }
+
+    .controls .hex-input {
+      width: 70%;
+      max-width: 100px;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .controls .color-picker {
+      width: 36px;
+      height: 36px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .text-input {
+      width: 95%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      margin-top: -15px;
+    }
+
+    .position-controls {
+      display: flex;
+      justify-content: space-around;
+      margin-top: -10px;
+    }
+
+    .position-controls button {
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: bold;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .position-controls button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .create-button {
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 18px;
+      color: white;
+      background-color: #6667ab;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      display: block;
+      width: fit-content;
+      margin-bottom: 80px;
+    }
+
+    .create-button:hover {
+      background-color: #505086;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: white;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      color: #6667ab;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    footer button {
+      background-color: #6667ab;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    footer button:hover {
+      background-color: #505086;
+    }
+
+    .nowHere {
+      background-color: #acacd5;
+    }
+
+    .nowHere:hover {
+      background-color: #8c8caf;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <img src="../coupong-logo.png" alt="로고" class="logo">
+    </div>
+    <button class="back-button" onclick="go_home()">로그아웃</button>
+  </header>
+
+  <h1>쿠폰 생성</h1>
+  <div class="coupon-container" id="couponContainer">
+    <canvas id="canvas1" class="coupon-image"></canvas>
+    <canvas id="canvas2" class="coupon-image"></canvas>
+    <canvas id="canvas3" class="coupon-image"></canvas>
+    <div class="text-overlay" id="textOverlay1">텍스트 입력</div>
+    <div class="day-overlay" id="textOverlay2">기한 입력:</div>
+  </div>
+
+  <div class="color-controls">
+    <div>
+      <h3>왼쪽 색상</h3>
+      <div class="input-group">
+        <input type="text" id="hexInput1" class="hex-input" value="#ffffff">
+        <input type="color" id="colorPicker1" class="color-picker" value="#ffffff">
+      </div>
+    </div>
+    <div>
+      <h3>오른쪽 색상</h3>
+      <div class="input-group">
+        <input type="text" id="hexInput2" class="hex-input" value="#ffffff">
+        <input type="color" id="colorPicker2" class="color-picker" value="#ffffff">
+      </div>
+    </div>
+  </div>
+
+  <div class="color-controls">
+    <div>
+      <h3>글자자 색상</h3>
+      <div class="input-group">
+        <input type="text" id="textHexInput" class="hex-input" value="#ffffff" placeholder="색상 코드 (#ffffff)">
+        <input type="color" id="textColorPicker" class="color-picker" value="#ffffff">
+      </div>
+    </div>
+    <div>
+      <h3>로고 색상</h3>
+      <div class="input-group">
+        <input type="text" id="hexInput3" class="hex-input" value="#ffffff">
+        <input type="color" id="colorPicker3" class="color-picker" value="#ffffff">
+      </div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <h3>텍스트 입력</h3>
+    <input type="text" id="textInput1" class="text-input" placeholder="쿠폰에 표시할 텍스트를 입력하세요">
+  </div>
+
+  <div class="controls">
+    <h3>텍스트 위치 조절</h3>
+    <div class="position-controls">
+      <button id="moveUp"> ↑ </button>
+      <button id="moveDown"> ↓ </button>
+      <button id="moveLeft"> ← </button>
+      <button id="moveRight"> → </button>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <h3>사용 기한</h3>
+    <input type="text" id="textInput2" class="text-input" placeholder="쿠폰의 사용 기한을 입력하세요">
+  </div>
+  
+  <div class="controls">
+    <h3>한마디</h3>
+    <input type="text" id="textInput3" class="text-input" placeholder="쿠폰의 설명을 입력하세요">
+  </div>
+  
+
+  <button class="create-button" id="createButton">쿠폰 만들기</button>
+
+  <footer>
+    <button onclick="go_get()">받은 쿠폰</button>
+    <button onclick="go_make()" class="nowHere">만든 쿠폰</button>
+    <button onclick="alert('준비 중입니다.')">자랑하기</button>
+  </footer>
+
+  <script>
+    // Firebase 초기화
+    const firebaseConfig = {
+      apiKey: "AIzaSyALH2cc2T41m3C8_Bqt98yFP0NJqeTTmKU",
+      authDomain: "coupong-50898.firebaseapp.com",
+      databaseURL: "https://coupong-50898-default-rtdb.firebaseio.com",
+      projectId: "coupong-50898",
+      storageBucket: "coupong-50898.firebasestorage.app",
+      messagingSenderId: "396007126503",
+      appId: "1:396007126503:web:e8caa6aaafb48f54a5b942",
+      measurementId: "G-R2604RJDDV"
+    };
+
+    // Firebase 앱 초기화
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const canvas1 = document.getElementById("canvas1");
+    const canvas2 = document.getElementById("canvas2");
+    const canvas3 = document.getElementById("canvas3");
+    const ctx1 = canvas1.getContext("2d");
+    const ctx2 = canvas2.getContext("2d");
+    const ctx3 = canvas3.getContext("2d");
+
+    const textInput1 = document.getElementById("textInput1");
+    const textInput2 = document.getElementById("textInput2");
+    const textInput3 = document.getElementById("textInput3");
+
+    const textOverlay1 = document.getElementById("textOverlay1");
+    const textOverlay2 = document.getElementById("textOverlay2");
+
+    const hexInput1 = document.getElementById("hexInput1");
+    const colorPicker1 = document.getElementById("colorPicker1");
+    const hexInput2 = document.getElementById("hexInput2");
+    const colorPicker2 = document.getElementById("colorPicker2");
+    const hexInput3 = document.getElementById("hexInput3");
+    const colorPicker3 = document.getElementById("colorPicker3");
+    const textHexInput = document.getElementById("textHexInput");
+    const textColorPicker = document.getElementById("textColorPicker");
+    const createButton = document.getElementById("createButton");
+
+    const moveUp = document.getElementById("moveUp");
+    const moveDown = document.getElementById("moveDown");
+    const moveLeft = document.getElementById("moveLeft");
+    const moveRight = document.getElementById("moveRight");
+
+    const cateImages = {
+      3: {
+        image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_1.png?alt=media&token=e60f6088-aff2-4f4e-be62-5f5426f5fa75",
+        image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_2.png?alt=media&token=4089419f-ac37-4250-98b5-95048fdb555c",
+        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_3.png?alt=media&token=63c6416a-1576-4a02-adb5-2055d38757b1"
+      },
+      // 다른 cate 경로 추가
+    };
+
+    // Canvas 초기 설정
+    canvas1.width = 350;
+    canvas1.height = 210;
+    canvas2.width = 350;
+    canvas2.height = 210;
+    canvas3.width = 350;
+    canvas3.height = 210;
+
+    // 기본 이미지 설정
+    const image1 = new Image();
+    const image2 = new Image();
+    const image3 = new Image();
+    image1.src = cateImages[3].image1; // 첫 번째 쿠폰 사진 경로
+    image2.src = cateImages[3].image2; // 두 번째 쿠폰 사진 경로
+    image3.src = cateImages[3].image3; // 쿠폰 로고 사진 경로
+
+    image1.onload = () => {
+      ctx1.drawImage(image1, 0, 0, canvas1.width, canvas1.height);
+    };
+
+    image2.onload = () => {
+      ctx2.drawImage(image2, 0, 0, canvas2.width, canvas2.height);
+    };
+
+    image3.onload = () => {
+      ctx3.drawImage(image3, 0, 0, canvas3.width, canvas3.height);
+    };
+
+    // 색상 업데이트 함수
+    function updateCanvasColor(ctx, color, image) {
+      ctx.clearRect(0, 0, canvas1.width, canvas1.height);
+      ctx.drawImage(image, 0, 0, canvas1.width, canvas1.height);
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas1.width, canvas1.height);
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    // 색상 변경 이벤트
+    hexInput1.addEventListener("input", () => {
+      const color = hexInput1.value;
+      colorPicker1.value = color;
+      updateCanvasColor(ctx1, color, image1);
+    });
+
+    colorPicker1.addEventListener("input", () => {
+      const color = colorPicker1.value;
+      hexInput1.value = color;
+      updateCanvasColor(ctx1, color, image1);
+    });
+
+    hexInput2.addEventListener("input", () => {
+      const color = hexInput2.value;
+      colorPicker2.value = color;
+      updateCanvasColor(ctx2, color, image2);
+    });
+
+    colorPicker2.addEventListener("input", () => {
+      const color = colorPicker2.value;
+      hexInput2.value = color;
+      updateCanvasColor(ctx2, color, image2);
+    });
+
+    hexInput3.addEventListener("input", () => {
+      const color = hexInput3.value;
+      colorPicker3.value = color;
+      updateCanvasColor(ctx3, color, image3);
+    });
+
+    colorPicker3.addEventListener("input", () => {
+      const color = colorPicker3.value;
+      hexInput3.value = color;
+      updateCanvasColor(ctx3, color, image3);
+    });
+
+    // 텍스트 업데이트
+    textInput1.addEventListener("input", () => {
+      textOverlay1.textContent = textInput1.value;
+    });
+    // 텍스트 업데이트
+    textInput2.addEventListener("input", () => {
+      textOverlay2.textContent = `사용 기한: ${textInput2.value}`;
+    });
+
+    // 텍스트 색상 업데이트
+    textHexInput.addEventListener("input", () => {
+      const color = textHexInput.value;
+      textColorPicker.value = color;
+      textOverlay1.style.color = color;
+      textOverlay2.style.color = color;
+    });
+
+    textColorPicker.addEventListener("input", () => {
+      const color = textColorPicker.value;
+      textHexInput.value = color;
+      textOverlay1.style.color = color;
+      textOverlay2.style.color = color;
+    });
+
+    // 텍스트 위치 조절
+    let textPosition = { top: 50, left: 40 };
+
+    function updateTextPosition() {
+      textOverlay1.style.top = `${textPosition.top}%`;
+      textOverlay1.style.left = `${textPosition.left}%`;
+      textOverlay1.style.transform = "translate(-50%, -50%)";
+    }
+
+    moveUp.addEventListener("click", () => {
+      textPosition.top = Math.max(0, textPosition.top - 2);
+      updateTextPosition();
+    });
+
+    moveDown.addEventListener("click", () => {
+      textPosition.top = Math.min(100, textPosition.top + 2);
+      updateTextPosition();
+    });
+
+    moveLeft.addEventListener("click", () => {
+      textPosition.left = Math.max(0, textPosition.left - 2);
+      updateTextPosition();
+    });
+
+    moveRight.addEventListener("click", () => {
+      textPosition.left = Math.min(100, textPosition.left + 2);
+      updateTextPosition();
+    });
+
+    function generateCouponCode() {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let couponCode = '';
+      for (let i = 0; i < 15; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        couponCode += characters[randomIndex];
+      }
+      return couponCode;
+    }
+
+
+    // 쿠폰 만들기 버튼
+    createButton.addEventListener("click", () => {
+  const image1Color = hexInput1.value;
+  const image2Color = hexInput2.value;
+  const image3Color = hexInput3.value;
+  const textColor = textHexInput.value;
+  const textContent = textInput1.value;
+  const dayContent = textInput2.value;
+  const descContent = textInput3.value;
+  const randomNum = generateCouponCode();
+
+  const coupon_user = localStorage.getItem('coupon_user');
+  if (!coupon_user) {
+    alert("쿠폰 사용자 정보가 없습니다. 다시 시도하세요.");
+    return;
+  }
+
+  function getFormattedDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const date = String(today.getDate()).padStart(2, "0");
+    return `${year}.${month}.${date}`;
+  }
+
+  const today = getFormattedDate();
+
+  database.ref('coupons/' + randomNum).set({
+    cate: 3,
+    image1Color: image1Color,
+    image2Color: image2Color,
+    image3Color: image3Color,
+    textColor: textColor,
+    text: textContent,
+    day: dayContent,
+    textPosition: textPosition,
+    desc: descContent,
+    randomNum: randomNum,
+    whoMake: coupon_user,
+    getUser: 0,
+    useUser: 0
+  }).then(() => {
+    console.log("쿠폰 데이터 저장 성공");
+    return database.ref(`users/${coupon_user}/makeCoupon/${randomNum}`).set({
+      makeDate: today
+    });
+  }).then(() => {
+    console.log("사용자 쿠폰 데이터 저장 성공");
+    alert("쿠폰이 성공적으로 생성되었습니다!");
+    // 페이지 이동은 모든 작업이 완료된 후에 실행
+    window.location.href = "../main_make.html";
+  }).catch((error) => {
+    console.error("데이터 저장 실패:", error);
+    alert("쿠폰 생성에 실패했습니다. 다시 시도하세요.");
+  });
+});
+
+function go_home() {
+      const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n로그아웃 하시겠습니까?`);
+
+      if (userConfirmed) {
+        localStorage.removeItem("coupon_user");
+        localStorage.removeItem("selectedCoupon");
+        window.location.href = "../index.html"; // 이동할 URL
+      } 
+    }
+    function go_get() {
+        const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n나가시겠습니까?`);
+
+        if (userConfirmed) {
+          window.location.href = "../main_get.html"; // 이동할 URL
+        } 
+    }
+    function go_make() {
+        const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n나가시겠습니까?`);
+
+        if (userConfirmed) {
+          window.location.href = "../main_make.html"; // 이동할 URL
+        } 
+    }
+  </script>
+</body>
+</html>

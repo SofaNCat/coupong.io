@@ -386,6 +386,15 @@
     const moveLeft = document.getElementById("moveLeft");
     const moveRight = document.getElementById("moveRight");
 
+    const cateImages = {
+      1: {
+        image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_1.png?alt=media&token=e60f6088-aff2-4f4e-be62-5f5426f5fa75",
+        image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_2.png?alt=media&token=4089419f-ac37-4250-98b5-95048fdb555c",
+        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_1.png?alt=media&token=1e3fb15e-aeae-4ec2-988d-d9beaf25a142"
+      },
+      // 다른 cate 경로 추가
+    };
+
     // Canvas 초기 설정
     canvas1.width = 350;
     canvas1.height = 210;
@@ -398,9 +407,9 @@
     const image1 = new Image();
     const image2 = new Image();
     const image3 = new Image();
-    image1.src = "쿠폰/coupon_3_1.png"; // 첫 번째 쿠폰 사진 경로
-    image2.src = "쿠폰/coupon_3_2.png"; // 두 번째 쿠폰 사진 경로
-    image3.src = "쿠폰/logo_1.png"; // 쿠폰 로고 사진 경로
+    image1.src = cateImages[1].image1; // 첫 번째 쿠폰 사진 경로
+    image2.src = cateImages[1].image2; // 두 번째 쿠폰 사진 경로
+    image3.src = cateImages[1].image3; // 쿠폰 로고 사진 경로
 
     image1.onload = () => {
       ctx1.drawImage(image1, 0, 0, canvas1.width, canvas1.height);

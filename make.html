@@ -181,14 +181,13 @@
     }
 
     .text-input {
-      width: 90%;
+      width: 95%;
       padding: 10px;
       font-size: 14px;
       border: 1px solid #ddd;
       border-radius: 5px;
       margin-bottom: 5px;
       margin-top: -15px;
-      margin-right: 20px;
     }
 
     .position-controls {
@@ -582,7 +581,7 @@
 });
 
 function go_home() {
-      const userConfirmed = confirm(`로그아웃 하시겠습니까?`);
+      const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n로그아웃 하시겠습니까?`);
 
       if (userConfirmed) {
         localStorage.removeItem("coupon_user");
@@ -591,10 +590,18 @@ function go_home() {
       } 
     }
     function go_get() {
-        window.location.href = "main_get.html"; // 이동할 URL
+        const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n나가시겠습니까?`);
+
+        if (userConfirmed) {
+          window.location.href = "main_get.html"; // 이동할 URL
+        } 
     }
     function go_make() {
-        window.location.href = "main_make.html"; // 이동할 URL
+        const userConfirmed = confirm(`화면을 나가면 쿠폰이 저장되지 않습니다.\n나가시겠습니까?`);
+
+        if (userConfirmed) {
+          window.location.href = "main_make.html"; // 이동할 URL
+        } 
     }
   </script>
 </body>

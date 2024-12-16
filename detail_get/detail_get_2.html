@@ -232,8 +232,12 @@
       <span id="coupon-desc" class="info-text"></span>
     </div>
     <div class="info-item">
-        <strong>유효 기간:</strong>
+        <strong>사용 기한:</strong>
         <span id="coupon-day" class="info-text"></span>
+      </div>
+      <div class="info-item">
+        <strong>발행인:</strong>
+        <span id="coupon-makeUser" class="info-text"></span>
       </div>
     <div class="info-item">
       <strong>쿠폰 번호:</strong>
@@ -376,6 +380,7 @@
         // 쿠폰 정보 추가
         document.getElementById("coupon-day").textContent = couponData.day;
         document.getElementById("coupon-desc").textContent = couponData.desc;
+        document.getElementById("coupon-makeUser").textContent = couponData.makeUser;
         document.getElementById("coupon-number").textContent = couponData.randomNum;
       } catch (error) {
         console.error("이미지를 로드하는 중 오류 발생:", error);

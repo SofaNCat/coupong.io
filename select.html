@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="나만의 쿠폰을 만들고 공유해 보세요!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿠퐁 - 나만의 쿠폰 만들기</title>
+  <link rel="icon" href="icon_mini.png" type="image/x-icon">
+  <link rel="shortcut icon" href="icon_mini.png" type="image/x-icon">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <style>
+    /* 전체 스타일 */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    /* 헤더 스타일 */
+    header {
+      background-color: #ffffff;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header .logo {
+      height: 35px;
+    }
+
+    header .login-button {
+      padding: 10px 20px;
+      background-color: #6667ab;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    header .login-button:hover {
+      background-color: #505086;
+    }
+
+    /* 제목 스타일 */
+    h1 {
+      margin: 30px 0 20px;
+      font-size: 28px;
+      color: #6667ab;
+      text-align: center;
+    }
+
+    /* 쿠폰 목록 스타일 */
+    .coupon-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px;
+      padding-bottom: 80px;
+    }
+
+    /* 쿠폰 카드 스타일 */
+    .coupon-card {
+      width: 350px;
+      height: 210px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      background-color: white;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .coupon-img {
+        width: 100%;
+    }
+
+    /* 푸터 스타일 */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: white;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      color: #6667ab;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    footer button {
+      background-color: #6667ab;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    footer button:hover {
+      background-color: #505086;
+    }
+
+    .nowHere {
+      background-color: #acacd5;
+    }
+
+    .nowHere:hover {
+      background-color: #8c8caf;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <img src="coupong-logo.png" alt="로고" class="logo">
+    </div>
+    <button class="login-button" onclick="go_home()">로그아웃</button>
+  </header>
+  
+  <h1>쿠폰 디자인 목록</h1>
+  <div class="coupon-list">
+    <div class="coupon-card" onclick="go_1()">
+        <img src="쿠폰 디자인/쿠폰 예시/coupon_1.png" class="coupon-img">
+    </div>
+    <div class="coupon-card" onclick="go_2()">
+        <img src="쿠폰 디자인/쿠폰 예시/coupon_2.png" class="coupon-img">
+    </div>
+    <div class="coupon-card" onclick="go_3()">
+        <img src="쿠폰 디자인/쿠폰 예시/coupon_3.png" class="coupon-img">
+    </div>
+  </div>
+  
+  <footer>
+    <button onclick="go_get()">받은 쿠폰</button>
+    <button onclick="go_make()" class="nowHere">만든 쿠폰</button>
+    <button onclick="alert('준비 중입니다.')">자랑하기</button>
+  </footer>
+
+  <script>
+    function go_home() {
+      const userConfirmed = confirm(`로그아웃 하시겠습니까?`);
+
+      if (userConfirmed) {
+        localStorage.removeItem("coupon_user");
+        localStorage.removeItem("selectedCoupon");
+        window.location.href = "index.html"; // 이동할 URL
+      } 
+    }
+    function go_get() {
+        window.location.href = "main_get.html"; // 이동할 URL
+    }
+    function go_make() {
+        window.location.href = "main_make.html"; // 이동할 URL
+    }
+
+    function go_1() {
+        const userConfirmed1 = confirm(`이 디자인으로 만드시겠습니까?`);
+
+      if (userConfirmed1) {
+        window.location.href = "make/make_1.html"; // 이동할 URL
+      }
+    }
+    function go_2() {
+        const userConfirmed1 = confirm(`이 디자인으로 만드시겠습니까?`);
+
+      if (userConfirmed1) {
+        window.location.href = "make/make_2.html"; // 이동할 URL
+      }
+    }
+    function go_3() {
+        const userConfirmed3 = confirm(`이 디자인으로 만드시겠습니까?`);
+
+      if (userConfirmed3) {
+        window.location.href = "make/make_3.html"; // 이동할 URL
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쿠폰 목록</title>
+  <style>
+    /* 전체 스타일 */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    /* 헤더 스타일 */
+    header {
+      background-color: #ffffff;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header .logo {
+      height: 35px;
+    }
+
+    header .login-button {
+      padding: 10px 20px;
+      background-color: #6667ab;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    header .login-button:hover {
+      background-color: #505086;
+    }
+
+    /* 제목 스타일 */
+    h1 {
+      margin: 30px 0 20px;
+      font-size: 28px;
+      color: #6667ab;
+      text-align: center;
+    }
+
+    /* 쿠폰 만들기 버튼 컨테이너 */
+  .create-button-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* 쿠폰 만들기 버튼 스타일 */
+  .create-coupon-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #6667ab;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .create-coupon-button:hover {
+    background-color: #505086;
+    transform: translateY(-2px);
+  }
+
+    /* 쿠폰 목록 스타일 */
+    .coupon-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px;
+      padding-bottom: 80px;
+    }
+
+    /* 쿠폰 카드 스타일 */
+    .coupon-card {
+      width: 350px;
+      height: 210px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      background-color: white;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .coupon-text {
+      position: absolute;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .coupon-day {
+      position: absolute;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      bottom: 10px;
+      left: 40%;
+      transform: translateX(-50%);
+    }
+
+    /* 푸터 스타일 */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: white;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      color: #6667ab;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    footer button {
+      background-color: #6667ab;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    footer button:hover {
+      background-color: #505086;
+    }
+
+    .nowHere {
+      background-color: #acacd5;
+    }
+
+    .nowHere:hover {
+      background-color: #8c8caf;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <img src="coupong-logo.png" alt="로고" class="logo">
+    </div>
+    <button class="login-button" onclick="go_home()">로그아웃</button>
+  </header>
+  
+  <h1>만든 쿠폰 목록</h1>
+  <div class="create-button-container">
+    <button class="create-coupon-button" onclick="go_create()">쿠폰 만들기</button>
+  </div>
+  <div class="coupon-list" id="couponList">
+    <!-- 쿠폰 카드가 여기에 추가됩니다 -->
+  </div>
+  
+  <footer>
+    <button onclick="go_get()">받은 쿠폰</button>
+    <button onclick="go_make()" class="nowHere">만든 쿠폰</button>
+    <button onclick="alert('준비 중입니다.')">자랑하기</button>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    // Firebase 초기화
+    const firebaseConfig = {
+      apiKey: "AIzaSyALH2cc2T41m3C8_Bqt98yFP0NJqeTTmKU",
+      authDomain: "coupong-50898.firebaseapp.com",
+      databaseURL: "https://coupong-50898-default-rtdb.firebaseio.com",
+      projectId: "coupong-50898",
+      storageBucket: "coupong-50898.firebasestorage.app",
+      messagingSenderId: "396007126503",
+      appId: "1:396007126503:web:e8caa6aaafb48f54a5b942",
+      measurementId: "G-R2604RJDDV"
+    };
+
+    const coupon_user = localStorage.getItem('coupon_user');
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const couponList = document.getElementById("couponList");
+
+    // 쿠폰 데이터를 Firebase에서 가져오기
+    function loadUserCoupons(coupon_user) {
+  const userRef = database.ref(`users/${coupon_user}/makeCoupon`);
+  
+  // 사용자 쿠폰 번호 가져오기
+  userRef.once("value").then((snapshot) => {
+    const coupons = snapshot.val();
+    console.log("사용자가 가진 쿠폰 데이터:", coupons);
+
+    if (!coupons) {
+      document.getElementById("loading").textContent = "쿠폰이 없습니다.";
+      return;
+    }
+
+    // 쿠폰 번호 배열 생성
+    const couponIds = Object.keys(coupons); // 쿠폰 번호 추출
+    console.log("쿠폰 번호 배열:", couponIds);
+
+    // 쿠폰 번호로 쿠폰 데이터 가져오기
+    const couponPromises = couponIds.map((couponId) =>
+      database.ref(`coupons/${couponId}`).once("value").then((couponSnapshot) => {
+        const couponData = couponSnapshot.val();
+        return {
+          ...couponData,
+          couponId, // 쿠폰 번호 추가
+          getDate: coupons[couponId].getDate // 사용자 쿠폰 정보 추가
+        };
+      })
+    );
+
+    Promise.all(couponPromises)
+      .then((couponDetails) => {
+        console.log("불러온 쿠폰 데이터:", couponDetails);
+
+        couponList.innerHTML = ""; // 기존 내용을 초기화
+        couponDetails.forEach((coupon) => {
+          if (coupon) {
+            addCouponCard(coupon); // 쿠폰을 화면에 추가
+          }
+        });
+
+        document.getElementById("loading").style.display = "none"; // 로딩 메시지 숨기기
+        couponList.style.display = "flex"; // 쿠폰 목록 표시
+      })
+      .catch((error) => {
+        console.error("쿠폰 데이터를 불러오는 중 오류:", error);
+        document.getElementById("loading").textContent = "쿠폰 데이터를 불러오는 중 오류가 발생했습니다.";
+      });
+  });
+}
+
+    // 로딩 중 메시지 표시
+    document.body.insertAdjacentHTML(
+    "beforeend",
+    '<div id="loading" style="text-align:center; margin-top:20px;">로딩 중...</div>'
+    );
+    couponList.style.display = "none"; // 쿠폰 목록 숨기기
+
+    // cate별 사진 경로 정의
+    const cateImages = {
+      1: { image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_1.png?alt=media&token=e60f6088-aff2-4f4e-be62-5f5426f5fa75", image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_2.png?alt=media&token=4089419f-ac37-4250-98b5-95048fdb555c", image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_1.png?alt=media&token=1e3fb15e-aeae-4ec2-988d-d9beaf25a142" },
+      2: { image1: "path/to/cate2_image1.jpg", image2: "path/to/cate2_image2.jpg" },
+      3: { image1: "path/to/cate3_image1.jpg", image2: "path/to/cate3_image2.jpg" },
+      // 필요한 cate 값과 경로를 추가
+    };
+
+    // 이미지 로드 함수
+function loadCouponImages(coupon) {
+  return new Promise((resolve, reject) => {
+    const cate = coupon.cate;
+
+    // 모든 이미지를 로드한 후 처리
+    const image1 = new Image();
+    const image2 = new Image();
+    const image3 = new Image();
+
+    let loadedCount = 0;
+    const checkAllLoaded = () => {
+      loadedCount++;
+      if (loadedCount === 3) resolve(coupon); // 모든 이미지가 로드되면 resolve
+    };
+
+    // 이미지 로드 설정
+    image1.src = cateImages[cate]?.image1;
+    image1.onload = checkAllLoaded;
+    image1.onerror = reject;
+
+    image2.src = cateImages[cate]?.image2;
+    image2.onload = checkAllLoaded;
+    image2.onerror = reject;
+
+    image3.src = cateImages[cate]?.image3;
+    image3.onload = checkAllLoaded;
+    image3.onerror = reject;
+
+    coupon.images = { image1, image2, image3 }; // 로드된 이미지 추가
+  });
+}
+
+// 쿠폰 카드를 추가하는 함수
+function addCouponCard(coupon) {
+  return new Promise((resolve) => {
+      const card = document.createElement("div");
+      card.classList.add("coupon-card");
+
+      // 클릭 이벤트 추가
+        card.addEventListener("click", () => {
+            localStorage.setItem("selectedCoupon", coupon.randomNum); // 쿠폰 번호 저장
+            console.log(coupon.randomNum);
+            window.location.href = "detail_make.html"; // 상세 페이지로 이동
+        });
+
+      // Canvas 생성
+      const canvas = document.createElement("canvas");
+      canvas.width = 350;
+      canvas.height = 210;
+      const ctx = canvas.getContext("2d");
+
+      const cate = coupon.cate;
+
+      // 첫 번째 이미지 로드 및 색상 적용
+      const image1 = new Image();
+      image1.src = cateImages[cate].image1;
+      image1.onload = () => {
+        ctx.drawImage(image1, 0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = "source-atop";
+        ctx.fillStyle = coupon.image1Color;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = "source-over";
+
+        // 두 번째 이미지 로드 및 색상 적용
+        const image2 = new Image();
+        image2.src = cateImages[cate].image2;
+        image2.onload = () => {
+          // 별도 레이어 처리로 색상 섞이지 않도록
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = 350;
+          tempCanvas.height = 210;
+          const tempCtx = tempCanvas.getContext("2d");
+
+          tempCtx.drawImage(image2, 0, 0, tempCanvas.width, tempCanvas.height);
+          tempCtx.globalCompositeOperation = "source-atop";
+          tempCtx.fillStyle = coupon.image2Color;
+          tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+          tempCtx.globalCompositeOperation = "source-over";
+
+          const image3 = new Image();
+          image3.src = cateImages[cate].image3;
+          image3.onload = () => {
+            // 별도 레이어 처리로 색상 섞이지 않도록
+            const temp2Canvas = document.createElement("canvas");
+            temp2Canvas.width = 350;
+            temp2Canvas.height = 210;
+            const temp2Ctx = temp2Canvas.getContext("2d");
+
+            temp2Ctx.drawImage(image3, 0, 0, temp2Canvas.width, temp2Canvas.height);
+            temp2Ctx.globalCompositeOperation = "source-atop";
+            temp2Ctx.fillStyle = coupon.textColor;
+            temp2Ctx.fillRect(0, 0, temp2Canvas.width, temp2Canvas.height);
+            temp2Ctx.globalCompositeOperation = "source-over";
+        
+            // 최종 캔버스에 병합
+            ctx.drawImage(tempCanvas, 0, 0);
+            ctx.drawImage(temp2Canvas, 0, 0);
+          }
+          // 텍스트 추가
+          const text = document.createElement("div");
+            text.classList.add("coupon-text");
+            text.style.color = coupon.textColor;
+            text.style.top = `${coupon.textPosition.top}%`;
+            text.style.left = `${coupon.textPosition.left}%`;
+            text.style.transform = "translate(-50%, -50%)";
+            text.textContent = coupon.text;
+
+            card.appendChild(text);
+
+          // 사용 기한 추가
+          const day = document.createElement("div");
+            day.classList.add("coupon-day");
+            day.textContent = `사용 기한: ${coupon.day}`;
+            day.style.color = coupon.textColor;
+
+            card.appendChild(day);
+            card.appendChild(canvas);
+            couponList.appendChild(card);
+        };
+      };
+    });
+      
+    }
+    loadUserCoupons(coupon_user);
+
+    function go_home() {
+      const userConfirmed = confirm(`로그아웃 하시겠습니까?`);
+
+      if (userConfirmed) {
+        localStorage.removeItem("coupon_user");
+        localStorage.removeItem("selectedCoupon");
+        window.location.href = "index.html"; // 이동할 URL
+      } 
+    }
+    function go_get() {
+        window.location.href = "main_get.html"; // 이동할 URL
+    }
+    function go_make() {
+        window.location.href = "main_make.html"; // 이동할 URL
+    }
+    function go_create() {
+        window.location.href = "make.html"; // 이동할 URL
+    }
+  </script>
+</body>
+</html>

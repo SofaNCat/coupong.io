@@ -120,17 +120,17 @@
 
     .coupon-text {
       position: absolute;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       color: white;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      /*transform: translate(-50%, -50%);*/
     }
 
     .coupon-day {
       position: absolute;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
       color: white;
       bottom: 10px;
@@ -281,9 +281,19 @@
     // cate별 사진 경로 정의
     const cateImages = {
       1: {
+        image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_1.png?alt=media&token=2072b8a4-1a75-4b33-9ae2-e360e9999063",
+        image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fempty.png?alt=media&token=c4b7ff42-93be-4422-b701-46142aa4f9ec",
+        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_1.png?alt=media&token=80416190-c0d6-4f18-95eb-a9a3a9473923",
+      },
+      2: {
+        image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_2_1.png?alt=media&token=c21a6fea-fa4d-4b18-b3a7-c55aae75e007",
+        image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_2_2.png?alt=media&token=dab69ff1-3a93-4ed8-bdfd-aecf10238cce",
+        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_2.png?alt=media&token=79bfb030-9f1a-42b1-81da-dec8e8ce6bf6"
+      },
+      3: {
         image1: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_1.png?alt=media&token=e60f6088-aff2-4f4e-be62-5f5426f5fa75",
         image2: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Fcoupon_3_2.png?alt=media&token=4089419f-ac37-4250-98b5-95048fdb555c",
-        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_1.png?alt=media&token=5c368886-ab9f-48c2-888e-8419e394d2a5"
+        image3: "https://firebasestorage.googleapis.com/v0/b/coupong-50898.firebasestorage.app/o/coupon_design%2Flogo_3.png?alt=media&token=63c6416a-1576-4a02-adb5-2055d38757b1"
       },
       // 다른 cate 경로 추가
     };
@@ -331,7 +341,13 @@ function addCouponCard(coupon) {
         card.addEventListener("click", () => {
             localStorage.setItem("selectedCoupon", coupon.randomNum); // 쿠폰 번호 저장
             console.log(coupon.randomNum);
-            window.location.href = "detail_make.html"; // 상세 페이지로 이동
+            if(cate == 1){
+              window.location.href = "detail_make/detail_make_1.html"; // 상세 페이지로 이동
+            }else if(cate == 2) {
+              window.location.href = "detail_make/detail_make_2.html"; // 상세 페이지로 이동
+            }else if(cate == 3) {
+              window.location.href = "detail_make/detail_make_3.html"; // 상세 페이지로 이동
+            }
         });
 
       // Canvas 생성
@@ -379,7 +395,7 @@ function addCouponCard(coupon) {
 
             temp2Ctx.drawImage(image3, 0, 0, temp2Canvas.width, temp2Canvas.height);
             temp2Ctx.globalCompositeOperation = "source-atop";
-            temp2Ctx.fillStyle = coupon.textColor;
+            temp2Ctx.fillStyle = coupon.image3Color;
             temp2Ctx.fillRect(0, 0, temp2Canvas.width, temp2Canvas.height);
             temp2Ctx.globalCompositeOperation = "source-over";
         
@@ -402,6 +418,15 @@ function addCouponCard(coupon) {
           const day = document.createElement("div");
             day.classList.add("coupon-day");
             day.textContent = `사용 기한: ${coupon.day}`;
+
+            if(cate == 1) {
+              day.style.top = '52%';
+              day.style.left = '50%';
+            }else if(cate == 2) {
+              day.style.top = '87%';
+              day.style.left = '50%';
+            }
+
             day.style.color = coupon.textColor;
 
             card.appendChild(day);
@@ -430,7 +455,7 @@ function addCouponCard(coupon) {
         window.location.href = "main_make.html"; // 이동할 URL
     }
     function go_create() {
-        window.location.href = "make.html"; // 이동할 URL
+        window.location.href = "select.html"; // 이동할 URL
     }
   </script>
 </body>
